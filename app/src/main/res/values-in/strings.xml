@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Currency Calculator</string>
+    <string name="from">Dari</string>
+    <string name="selectfrom">Pilih mata uang</string>
+    <string name="to">Untuk</string>
+    <string name="amount">Jumlah</string>
+    <string name="selectto">Pilih mata uang</string>
+    <string name="currencyconverter">Hai, selamat datang di currency calculator. Isi data di bawah untuk menggunakan fitur!</string>
+    <string name="calculate">Hitung sekarang!</string>
+    <string name="result">Hasil</string>
+    <string name="showmore">Tampilan yang lain!</string>
+    <string name="detail_screen">Nilai mata uang dari 1 USD</string>
+    <string name="bahasa">Indonesia</string>
+    <string name="back">Kembali</string>
+    <string name="share">Bagikan!</string>
+</resources>

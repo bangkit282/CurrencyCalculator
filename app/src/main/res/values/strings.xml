@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Currency Calculator</string>
+    <string name="from">From</string>
+    <string name="selectfrom">Select currency from</string>
+    <string name="to">To</string>
+    <string name="amount">Amount</string>
+    <string name="selectto">Select currency to</string>
+    <string name="currencyconverter">Hello, welcome to currency calculator. Please complete the form below to use it!</string>
+    <string name="calculate">Calculate Now!</string>
+    <string name="result">Result</string>
+    <string name="showmore">Show more!</string>
+    <string name="detail_screen">Currency value for 1 USD</string>
+    <string name="bahasa">English</string>
+    <string name="back">Back</string>
+    <string name="share">Share!</string>
+</resources>

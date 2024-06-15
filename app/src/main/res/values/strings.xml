@@ -13,4 +13,23 @@
     <string name="bahasa">English</string>
     <string name="back">Back</string>
     <string name="share">Share!</string>
+    <string name="history_screen">History</string>
+    <string name="list_kosong">Tidak ada data</string>
+    <string name="no_history">No History Fund</string>
+    <string name="history_message">%3$s %1$s to %2$s is %4$s</string>
+    <string name="add_data">The result is auto save to history</string>
+    <string name="update_screen">Update Currency</string>
+    <string name="delete_all">Delete All History</string>
+    <string name="delete_all_history">Are u sure want to clear all history data?</string>
+    <string name="delete_data">History cleared!</string>
+    <string name="yes">Yes</string>
+    <string name="no">NO</string>
+    <string name="noo">No</string>
+    <string name="delete_history">Delete selected history?</string>
+    <string name="delete">History deleted</string>
+    <string name="grid_view">Grid View</string>
+    <string name="list">List View</string>
+    <string name="image">Image %1$s</string>
+    <string name="error">Gagal memuat data</string>
+    <string name="try_again">Coba Lagi</string>
 </resources>

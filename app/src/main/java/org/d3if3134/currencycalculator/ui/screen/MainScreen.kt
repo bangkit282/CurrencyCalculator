@@ -1,8 +1,10 @@
 package org.d3if3134.currencycalculator.ui.screen
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -11,16 +13,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.List
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -35,6 +33,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,19 +41,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.firestore.FirebaseFirestore
 import org.d3if3134.currencycalculator.R
-import org.d3if3134.currencycalculator.data.currencyCode
+import org.d3if3134.currencycalculator.database.CurrencyDb
 import org.d3if3134.currencycalculator.model.CurrencyCode
 import org.d3if3134.currencycalculator.navigation.Screen
 import org.d3if3134.currencycalculator.ui.theme.CurrencyCalculatorTheme
+
 
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
@@ -77,6 +79,13 @@ fun MainScreen(navController: NavHostController){
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 actions = {
+                    IconButton(onClick = { navController.navigate(Screen.History.route) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_history_24),
+                            contentDescription = stringResource(id = R.string.history_screen),
+                            tint = contentColorFor(MaterialTheme.colorScheme.primaryContainer)
+                        )
+                    }
                     IconButton(onClick = { navController.navigate(Screen.Detail.route) }) {
                         Icon(
                             imageVector = Icons.Rounded.List,
@@ -85,34 +94,6 @@ fun MainScreen(navController: NavHostController){
 
                         )
                     }
-//                    IconButton(onClick = { menuExpanded = true}) {
-//                        Icon(
-//                            imageVector = Icons.Rounded.Settings,
-//                            contentDescription = stringResource(id = R.string.bahasa),
-//                            tint = contentColorFor(MaterialTheme.colorScheme.primaryContainer)
-//                        )
-//                        Column(
-//                            modifier = Modifier.wrapContentSize(TopStart)
-//                        ){
-//                            DropdownMenu(
-//                                expanded = menuExpanded,
-//                                onDismissRequest = {
-//                                    menuExpanded = false
-//                                },
-//                                modifier = Modifier.wrapContentSize(TopStart)
-//                                ) {
-//                                    DropdownMenuItem(
-//                                        text = { "Engilsh" },
-//                                        onClick = { changeLanguage("en") }
-//                                    )
-//                                    DropdownMenuItem(
-//                                        text = { "Bahasa" },
-//                                        onClick =
-//                                    )
-//                            }
-//                        }
-//                    }
-
                 }
             )
         }
@@ -124,134 +105,183 @@ fun MainScreen(navController: NavHostController){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScreenContent(modifier: Modifier) {
-    var amount by rememberSaveable { mutableFloatStateOf(0f) }
-    var from by remember { mutableStateOf(currencyCode[0]) }
-    var to by remember { mutableStateOf(currencyCode[0]) }
-    var isExpanded by remember { mutableStateOf(false) }
-    var isExpandedTo by remember { mutableStateOf(false) }
-    var result by rememberSaveable { mutableStateOf("") }
-    var isVisibility by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
+    val db = CurrencyDb.getInstance(context)
+    val factory = ViewModelFactory(db.dao)
+    val viewModel: MainViewModel = viewModel(factory = factory)
+    val data = viewModel.data.value
+    val firebase = FirebaseFirestore.getInstance()
 
-    Column (
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = stringResource(id = R.string.currencyconverter))
+    if (data.isEmpty()) {
+        viewModel.retrieveData()
+    }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = stringResource(id = R.string.selectfrom))
+    if (data.isNotEmpty()) {
 
-        ExposedDropdownMenuBox(expanded = isExpanded, onExpandedChange = { isExpanded = !isExpanded }) {
-            TextField(
-                modifier = Modifier.menuAnchor(),
-                value = from.currency,
-                onValueChange = {},
-                label = { Text(text = stringResource(id = R.string.from)) },
-                readOnly = true,
-                trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)}
-            )
-            
-            ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
-                currencyCode.forEach { currency ->
-                    Box(
-                        modifier = Modifier
-                            .height(56.dp)
-                            .clickable { from = currency; isExpanded = false }
-                            .border(
-                                1.dp,
-                                MaterialTheme.colorScheme.onSurface,
-                                RoundedCornerShape(4.dp)
-                            )
-                            .padding(horizontal = 16.dp)
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(text = currency.currency)
+        var amount by rememberSaveable { mutableFloatStateOf(0f) }
+        var from by remember { mutableStateOf(data[0]) }
+        var to by remember { mutableStateOf(data[1]) }
+        var isExpanded by remember { mutableStateOf(false) }
+        var isExpandedTo by remember { mutableStateOf(false) }
+        var result by rememberSaveable { mutableStateOf("") }
+        var isVisibility by rememberSaveable { mutableStateOf(false) }
+
+
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = stringResource(id = R.string.currencyconverter))
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = stringResource(id = R.string.selectfrom))
+
+            ExposedDropdownMenuBox(
+                expanded = isExpanded,
+                onExpandedChange = { isExpanded = !isExpanded }) {
+                TextField(
+                    modifier = Modifier.menuAnchor(),
+                    value = from.currency,
+                    onValueChange = {},
+                    label = { Text(text = stringResource(id = R.string.from)) },
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) }
+                )
+
+                ExposedDropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false }) {
+                    data.forEach { currency ->
+                        Box(
+                            modifier = Modifier
+                                .height(56.dp)
+                                .clickable { from = currency; isExpanded = false }
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.onSurface,
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 16.dp)
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Text(text = currency.currency)
+                        }
                     }
+
                 }
-                
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = stringResource(id = R.string.selectto))
+            Text(text = stringResource(id = R.string.selectto))
 
-        ExposedDropdownMenuBox(expanded = isExpandedTo, onExpandedChange = { isExpandedTo = !isExpandedTo }) {
-            TextField(
-                modifier = Modifier.menuAnchor(),
-                value = to.currency,
-                onValueChange = {},
-                label = { Text(text = stringResource(id = R.string.to)) },
-                readOnly = true,
-                trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpandedTo)}
+            ExposedDropdownMenuBox(
+                expanded = isExpandedTo,
+                onExpandedChange = { isExpandedTo = !isExpandedTo }) {
+                TextField(
+                    modifier = Modifier.menuAnchor(),
+                    value = to.currency,
+                    onValueChange = {},
+                    label = { Text(text = stringResource(id = R.string.to)) },
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpandedTo) }
+                )
+
+                ExposedDropdownMenu(
+                    expanded = isExpandedTo,
+                    onDismissRequest = { isExpandedTo = false }) {
+                    data.forEach { currency ->
+                        Box(
+                            modifier = Modifier
+                                .height(56.dp)
+                                .clickable { to = currency; isExpandedTo = false }
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.onSurface,
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 16.dp)
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Text(text = currency.currency)
+                        }
+                    }
+
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedTextField(
+                value = amount.toString(),
+                onValueChange = {
+                    amount = it.toFloat()
+                },
+                label = { Text(text = stringResource(id = R.string.amount)) }
             )
 
-            ExposedDropdownMenu(expanded = isExpandedTo, onDismissRequest = { isExpandedTo = false }) {
-                currencyCode.forEach { currency ->
-                    Box(
-                        modifier = Modifier
-                            .height(56.dp)
-                            .clickable { to = currency; isExpandedTo = false }
-                            .border(
-                                1.dp,
-                                MaterialTheme.colorScheme.onSurface,
-                                RoundedCornerShape(4.dp)
-                            )
-                            .padding(horizontal = 16.dp)
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(text = currency.currency)
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(onClick = {
+                result = calculateCurrency(amount, from, to)
+                isVisibility = true
+                viewModel.insertHistory(from.currency, to.currency, amount.toDouble(), result.toDouble())
+
+                val history: Map<String, Any> = hashMapOf(
+                    "fromCurrency" to from.currency,
+                    "toCurrency" to to.currency,
+                    "amount" to amount.toDouble(),
+                    "result" to result.toDouble()
+                )
+
+                firebase.collection("history")
+                    .add(history)
+                    .addOnSuccessListener {
+                        viewModel.retrieveData()
                     }
-                }
-
+                    .addOnFailureListener { e ->
+                        Log.w(TAG, "Error writing document", e)
+                    }
+            }) {
+                Text(text = stringResource(id = R.string.calculate))
             }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedTextField(
-            value = amount.toString(),
-            onValueChange = {
-                amount = it.toFloat()
-            },
-            label = { Text(text = stringResource(id = R.string.amount)) }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(onClick = { result = calculateCurrency(amount, from, to)
-            isVisibility = true}) {
-            Text(text = stringResource(id = R.string.calculate))
-        }
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        if (isVisibility) {
-            Text(text = stringResource(id = R.string.result), color = contentColorFor(MaterialTheme.colorScheme.primaryContainer))
-            Text(text = result + " " + to.code, style = MaterialTheme.typography.headlineLarge, color = contentColorFor(MaterialTheme.colorScheme.primaryContainer))
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            if (result != "Select different currency!") {
-                Button(
-                    onClick = {
-                    shareData(
-                        context = context,
-                        amount.toString() + " = " + result + " " + to.code + "\n CHECK IT OUT FROM CURRENCY CALCULATOR APP!")
-                }) {
-                    Text(text = stringResource(id = R.string.share))
-                }
-            }
+            if (isVisibility) {
+                Text(
+                    text = stringResource(id = R.string.result),
+                    color = contentColorFor(MaterialTheme.colorScheme.primaryContainer)
+                )
+                Text(
+                    text = result + " " + to.code,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = contentColorFor(MaterialTheme.colorScheme.primaryContainer)
+                )
 
-            Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(48.dp))
+
+                if (result != "Select different currency!") {
+                    Button(
+                        onClick = {
+                            shareData(
+                                context = context,
+                                amount.toString() + " = " + result + " " + to.code + "\n CHECK IT OUT FROM CURRENCY CALCULATOR APP!"
+                            )
+                        }) {
+                        Text(text = stringResource(id = R.string.share))
+                    }
+                }
+                Spacer(modifier = Modifier.height(48.dp))
+            }
         }
     }
 }
@@ -339,15 +369,5 @@ private fun shareData(context: Context, message: String) {
     }
 }
 
-//private fun changeLanguage(language: String) {
-//    if (language == "en") {
-//        //use string resource from strings.xml
-//
-//
-//    } else {
-//        // Change language to Bahasa
-//
-//    }
-//}
 
 

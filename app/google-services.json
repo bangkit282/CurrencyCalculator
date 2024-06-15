@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "921398940631",
+    "project_id": "currency-calculator-bae5e",
+    "storage_bucket": "currency-calculator-bae5e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:921398940631:android:14a1031c0c6e17f812b192",
+        "android_client_info": {
+          "package_name": "org.d3if3134.currencycalculator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "921398940631-jn9co8t0kslbgtd1t74a6127bv2qlj00.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.d3if3134.currencycalculator",
+            "certificate_hash": "35ae28bb369ca87475911bf7b64a7c42d80feb39"
+          }
+        },
+        {
+          "client_id": "921398940631-rmfcup4ndvimr4m1i3g821h7f2uo316f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.d3if3134.currencycalculator",
+            "certificate_hash": "4a9f82425dbc1eece619581cf1f60e8749906a45"
+          }
+        },
+        {
+          "client_id": "921398940631-tj1f9db5fqiq349j7d84h1p9jqik0cqt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8AzXQdggFATmrw7aXORKvn8yzsEoY8Bo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "921398940631-tj1f9db5fqiq349j7d84h1p9jqik0cqt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
